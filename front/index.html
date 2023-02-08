@@ -1,0 +1,143 @@
+<!DOCTYPE>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ru" lang="ru">
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <title>L0</title>
+</head>
+<body>
+<label for="input_id">
+    Id:
+</label><input id="input_id" type="text">
+<button onclick="search(input_id.value)">SEARCH</button>
+<div id="delivery">
+    <div id="phone"></div>
+    <div id="name_"></div>
+    <div id="zip"></div>
+    <div id="city"></div>
+    <div id="address"></div>
+    <div id="region"></div>
+    <div id="email"></div>
+</div>
+<div id="items">
+    <div class="chrt_id"></div>
+    <div class="track_number"></div>
+    <div class="price"></div>
+    <div class="rid"></div>
+    <div class="name"></div>
+    <div class="sale"></div>
+    <div class="size"></div>
+    <div class="total_price"></div>
+    <div class="nm_id"></div>
+    <div class="brand"></div>
+    <div class="status"></div>
+    <div class="order_uid"></div>
+</div>
+<div id="orders">
+    <div id="order_id"></div>
+    <div id="track__number"></div>
+    <div id="entry"></div>
+    <div id="delivery_"></div>
+    <div id="payment_"></div>
+    <div id="locale"></div>
+    <div id="internal_signature"></div>
+    <div id="customer_id"></div>
+    <div id="delivery_service"></div>
+    <div id="shardkey"></div>
+    <div id="sm_id"></div>
+    <div id="date_created"></div>
+    <div id="oof_shard"></div>
+</div>
+<div id="payment">
+    <div id="transaction"></div>
+    <div id="request_id"></div>
+    <div id="currency"></div>
+    <div id="provider"></div>
+    <div id="amount"></div>
+    <div id="payment_dt"></div>
+    <div id="bank"></div>
+    <div id="delivery_cost"></div>
+    <div id="goods_total"></div>
+    <div id="custom_fee"></div>
+</div>
+
+<script>
+    search = (id) => {
+        send("/" + id, null, (status, model) => {
+            if (status === 200) {
+                name.innerHTML = model.delivery.name
+                phone.innerHTML = model.delivery.phone
+                zip.innerHTML = model.delivery.zip
+                address.innerHTML = model.delivery.address
+                city.innerHTML = model.delivery.city
+                region.innerHTML = model.delivery.region
+                email.innerHTML = model.delivery.email
+
+                order_id.innerHTML = model.order_uid
+                track__number.innerHTML = model.track_number
+                entry.innerHTML = model.entry
+
+                locale.innerHTML = model.locale
+                internal_signature.innerHTML = model.internal_signature
+                customer_id.innerHTML = model.customer_id
+                delivery_service.innerHTML = model.delivery_service
+                shardkey.innerHTML = model.shardkey
+                sm_id.innerHTML = model.sm_id
+                date_created.innerHTML = model.date_created
+                oof_shard.innerHTML = model.oof_shard
+                locale.innerHTML = model.locale
+                transaction.innerHTML = model.payment.transaction
+                request_id.innerHTML = model.payment.request_id
+                currency.innerHTML = model.payment.currency
+                provider.innerHTML = model.payment.provider
+                amount.innerHTML = model.payment.amount
+                payment_dt.innerHTML = model.payment.payment_dt
+                bank.innerHTML = model.payment.bank
+                delivery_cost.innerHTML = model.payment.delivery_cost
+                goods_total.innerHTML = model.payment.goods_total
+                custom_fee.innerHTML = model.payment.custom_fee
+
+                let items_ = items.innerHTML
+                items.innerHTML = ""
+                for (let i = 0; i < model.items.length; i++) {
+                    items.innerHTML += "<div id='item" + i + "'>" + items_ + "</div>"
+                    let item = items.querySelector("#item" + i)
+                    item.querySelector(".chrt_id").innerHTML = model.items[i].chrt_id
+                    item.querySelector(".track_number").innerHTML = model.items[i].track_number
+                    item.querySelector(".price").innerHTML = model.items[i].price
+                    item.querySelector(".rid").innerHTML = model.items[i].rid
+                    item.querySelector(".name").innerHTML = model.items[i].name
+                    item.querySelector(".sale").innerHTML = model.items[i].sale
+                    item.querySelector(".size").innerHTML = model.items[i].size
+                    item.querySelector(".total_price").innerHTML = model.items[i].total_price
+                    item.querySelector(".nm_id").innerHTML = model.items[i].nm_id
+                    item.querySelector(".brand").innerHTML = model.items[i].brand
+                    item.querySelector(".status").innerHTML = model.items[i].status
+                    item.querySelector(".order_uid").innerHTML = model.items[i].order_uid
+                }
+            }
+        })
+    }
+
+    async function send(url, data, on_result) {
+        console.log(url, data);
+        if (data !== undefined && data !== null) {
+            response = await fetch(url, {
+                method: "POST",
+                body: data instanceof FormData ? data : JSON.stringify(data)
+            });
+        } else {
+            response = await fetch(url);
+        }
+        let status = response.status;
+        let message = await response.text();
+        try {
+            message = JSON.parse(message);
+        } catch {
+        }
+        console.log(message);
+        if (on_result) await on_result(status, message);
+        return [status, message];
+    };
+</script>
+</body>
+</html>
