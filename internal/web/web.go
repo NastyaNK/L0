@@ -3,6 +3,7 @@ package web
 import (
 	"L0/internal/entity"
 	"encoding/json"
+	"fmt"
 	"github.com/go-chi/chi/v5"
 	"net/http"
 )
@@ -17,7 +18,9 @@ type Web struct {
 func (w *Web) getHandler() *chi.Mux {
 	r := chi.NewRouter()
 	r.Get("/{id}", func(writer http.ResponseWriter, request *http.Request) {
-		model := w.GetModel(chi.URLParam(request, "id"))
+		id := chi.URLParam(request, "id")
+		fmt.Println("Поиск заказа:", id)
+		model := w.GetModel(id)
 		if model == nil {
 			writer.WriteHeader(404)
 		} else {

@@ -2,19 +2,21 @@ package psql
 
 import (
 	"L0/internal/entity"
+	"encoding/json"
 	"fmt"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"log"
+	"os"
 )
 
 type Postgres struct {
 	db *sqlx.DB
 }
 
-func NewDB(user, password, base, host string) *Postgres {
+func NewDB(connect *entity.DBConnect) *Postgres {
 	psql := Postgres{}
-	_, err := psql.Connect(user, password, base, host)
+	_, err := psql.Connect(connect.User, connect.Password, connect.DBname, connect.Host)
 	if err != nil {
 		log.Println(err)
 		return nil
@@ -102,4 +104,11 @@ func (psql *Postgres) Set(model *entity.Model) {
 		return
 	}
 
+}
+
+func GetDBConfig(file string) *entity.DBConnect {
+	var db entity.DBConnect
+	data, _ := os.ReadFile(file)
+	json.Unmarshal(data, &db)
+	return &db
 }

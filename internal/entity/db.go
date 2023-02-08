@@ -55,3 +55,10 @@ type Order struct {
 	DateCreated       time.Time `db:"date_created"`
 	OofShard          string    `db:"oof_shard"`
 }
+
+type DBConnect struct {
+	User     string `json:"user"`
+	Password string `json:"password"`
+	DBname   string `json:"dbname"`
+	Host     string `json:"host"`
+}

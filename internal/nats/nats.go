@@ -1,7 +1,6 @@
 package nats
 
 import (
-	"fmt"
 	"github.com/nats-io/nats.go"
 	"log"
 	"os"
@@ -16,22 +15,21 @@ type getter func([]byte)
 func (n *NATS) Publish(b []byte) {
 	n.con.Publish(n.channel, b)
 }
-func (n *NATS) Connect(callback getter) {
-	nc, err := n.GetStream()
+func (n *NATS) Connect(file string, callback getter) {
+	nc, err := n.GetStream(file)
 	if err != nil {
 		log.Fatal(err)
 	}
 	nc.Subscribe(n.channel, func(msg *nats.Msg) {
-		fmt.Println("Получен файл")
 		callback(msg.Data)
 	})
 }
 
-func (n *NATS) GetStream() (*nats.Conn, error) {
+func (n *NATS) GetStream(file string) (*nats.Conn, error) {
 	var err error
 	if n.con == nil {
 		n.con, err = nats.Connect(nats.DefaultURL) //подключение к серверу
-		b, err2 := os.ReadFile("channel")
+		b, err2 := os.ReadFile(file)
 		if err2 != nil {
 			log.Fatal(err)
 		}
