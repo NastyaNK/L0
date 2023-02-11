@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/go-chi/chi/v5"
+	"log"
 	"net/http"
 )
 
@@ -17,7 +18,7 @@ type Web struct {
 
 func (w *Web) getHandler() *chi.Mux {
 	r := chi.NewRouter()
-	r.Get("/{id}", func(writer http.ResponseWriter, request *http.Request) {
+	r.Get("/search/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := chi.URLParam(request, "id")
 		fmt.Println("Поиск заказа:", id)
 		model := w.GetModel(id)
@@ -28,15 +29,18 @@ func (w *Web) getHandler() *chi.Mux {
 			if err != nil {
 				writer.WriteHeader(404)
 			} else {
-				writer.Write(b)
+				_, err := writer.Write(b)
+				if err != nil {
+					log.Fatal(err)
+				}
 			}
 		}
 
 	})
-	r.Handle("/", http.FileServer(http.Dir(w.Files)))
+	r.Handle("/*", http.FileServer(http.Dir(w.Files)))
 	return r
 }
 
-func (w *Web) Run(address string) {
-	http.ListenAndServe(address, w.getHandler())
+func (w *Web) Run(address string) error {
+	return http.ListenAndServe(address, w.getHandler())
 }

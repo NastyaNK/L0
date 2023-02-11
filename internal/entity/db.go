@@ -59,6 +59,6 @@ type Order struct {
 type DBConnect struct {
 	User     string `json:"user"`
 	Password string `json:"password"`
-	DBname   string `json:"dbname"`
+	DBName   string `json:"dbname"`
 	Host     string `json:"host"`
 }

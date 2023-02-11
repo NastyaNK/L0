@@ -1,5 +1,3 @@
-//основная логика сервиса
-
 package app
 
 import (
@@ -8,7 +6,6 @@ import (
 	"L0/internal/nats"
 	psql "L0/internal/repository"
 	"encoding/json"
-	"fmt"
 	"log"
 )
 
@@ -18,26 +15,38 @@ type App struct {
 	cache *cache.Cache
 }
 
-func NewAPP(config, channel string) *App {
+func NewAPP(config, channel string) (*App, error) {
+	dbConfig, err := psql.GetDBConfig(config)
+	if err != nil {
+		return nil, err
+	}
+	db, err := psql.NewDB(dbConfig)
+	if err != nil {
+		return nil, err
+	}
 	var app = App{
-		PDB:   psql.NewDB(psql.GetDBConfig(config)),
+		PDB:   db,
 		NATS:  nats.NATS{},
 		cache: cache.NewCache(),
 	}
-	models := app.PDB.GetAll()
-	fmt.Println("Загружено в кэш:", len(models))
-	app.cache.SetAll(models)
-	app.NATS.Connect(channel, func(b []byte) {
+	models, err := app.PDB.GetAll()
+	if err == nil {
+		app.cache.SetAll(models)
+	}
+
+	err = app.NATS.Connect(channel, func(b []byte) {
 		var model = entity.Model{}
 		err := json.Unmarshal(b, &model)
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Println("Получен новый заказ:", model.OrderUid)
 		app.cache.Set(&model)
-		app.PDB.Set(&model)
+		err = app.PDB.Set(&model)
+		if err != nil {
+			log.Fatal(err)
+		}
 	})
-	return &app
+	return &app, err
 }
 
 func (a *App) Read(id string) *entity.Model {

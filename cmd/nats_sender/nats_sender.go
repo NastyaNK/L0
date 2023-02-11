@@ -11,7 +11,10 @@ import (
 )
 
 func Send(n *nats.NATS, count int, interval time.Duration) {
-	mod := GetModel("model.json")
+	mod, err := GetModel("model.json")
+	if err != nil {
+		log.Fatal(err)
+	}
 	for i := 0; i < count; i++ {
 		time.Sleep(interval * time.Second)
 		mod.OrderUid = rand.GenerateString(rand.LetterBytes+rand.NumberBytes, len(mod.OrderUid))
@@ -22,26 +25,34 @@ func Send(n *nats.NATS, count int, interval time.Duration) {
 			mod.Items[i].ChrtId = rand.GenerateNumber(7)
 			mod.Items[i].NmId = rand.GenerateNumber(7)
 		}
-		n.Publish(ToBytes(mod))
+		bytes, err := ToBytes(mod)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		err = n.Publish(bytes)
+		if err != nil {
+			log.Println(err)
+			return
+		}
 	}
 }
 
-func GetModel(str string) *entity.Model {
+func GetModel(str string) (*entity.Model, error) {
 	data, err := os.ReadFile(str)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return nil, err
 	}
 	var variable entity.Model
 	err = json.Unmarshal(data, &variable)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return nil, err
 	}
-	return &variable
+	return &variable, nil
 }
-func ToBytes(model *entity.Model) []byte {
+func ToBytes(model *entity.Model) ([]byte, error) {
 	b, err := json.Marshal(model)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return b
+	return b, err
 }
